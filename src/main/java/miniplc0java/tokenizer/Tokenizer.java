@@ -1,20 +1,21 @@
 package miniplc0java.tokenizer;
 
-import miniplc0java.error.TokenizeError;
 import miniplc0java.error.ErrorCode;
+import miniplc0java.error.TokenizeError;
 
 public class Tokenizer {
 
-    private StringIter it;
+    private final StringIter it;
 
     public Tokenizer(StringIter it) {
         this.it = it;
     }
 
     // 这里本来是想实现 Iterator<Token> 的，但是 Iterator 不允许抛异常，于是就这样了
+
     /**
      * 获取下一个 Token
-     * 
+     *
      * @return
      * @throws TokenizeError 如果解析有异常则抛出
      */
@@ -31,9 +32,11 @@ public class Tokenizer {
         char peek = it.peekChar();
         if (Character.isDigit(peek)) {
             return lexUInt();
-        } else if (Character.isAlphabetic(peek)) {
+        }
+        else if (Character.isAlphabetic(peek)) {
             return lexIdentOrKeyword();
-        } else {
+        }
+        else {
             return lexOperatorOrUnknown();
         }
     }

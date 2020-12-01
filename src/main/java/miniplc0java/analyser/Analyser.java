@@ -1,10 +1,6 @@
 package miniplc0java.analyser;
 
-import miniplc0java.error.AnalyzeError;
-import miniplc0java.error.CompileError;
-import miniplc0java.error.ErrorCode;
-import miniplc0java.error.ExpectedTokenError;
-import miniplc0java.error.TokenizeError;
+import miniplc0java.error.*;
 import miniplc0java.instruction.Instruction;
 import miniplc0java.instruction.Operation;
 import miniplc0java.tokenizer.Token;
@@ -12,20 +8,28 @@ import miniplc0java.tokenizer.TokenType;
 import miniplc0java.tokenizer.Tokenizer;
 import miniplc0java.util.Pos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public final class Analyser {
 
     Tokenizer tokenizer;
     ArrayList<Instruction> instructions;
 
-    /** 当前偷看的 token */
+    /**
+     * 当前偷看的 token
+     */
     Token peekedToken = null;
 
-    /** 符号表 */
+    /**
+     * 符号表
+     */
     HashMap<String, SymbolEntry> symbolTable = new HashMap<>();
 
-    /** 下一个变量的栈偏移 */
+    /**
+     * 下一个变量的栈偏移
+     */
     int nextOffset = 0;
 
     public Analyser(Tokenizer tokenizer) {
@@ -40,7 +44,7 @@ public final class Analyser {
 
     /**
      * 查看下一个 Token
-     * 
+     *
      * @return
      * @throws TokenizeError
      */
@@ -53,7 +57,7 @@ public final class Analyser {
 
     /**
      * 获取下一个 Token
-     * 
+     *
      * @return
      * @throws TokenizeError
      */
@@ -62,14 +66,15 @@ public final class Analyser {
             var token = peekedToken;
             peekedToken = null;
             return token;
-        } else {
+        }
+        else {
             return tokenizer.nextToken();
         }
     }
 
     /**
      * 如果下一个 token 的类型是 tt，则返回 true
-     * 
+     *
      * @param tt
      * @return
      * @throws TokenizeError
@@ -81,7 +86,7 @@ public final class Analyser {
 
     /**
      * 如果下一个 token 的类型是 tt，则前进一个 token 并返回这个 token
-     * 
+     *
      * @param tt 类型
      * @return 如果匹配则返回这个 token，否则返回 null
      * @throws TokenizeError
@@ -90,14 +95,15 @@ public final class Analyser {
         var token = peek();
         if (token.getTokenType() == tt) {
             return next();
-        } else {
+        }
+        else {
             return null;
         }
     }
 
     /**
      * 如果下一个 token 的类型是 tt，则前进一个 token 并返回，否则抛出异常
-     * 
+     *
      * @param tt 类型
      * @return 这个 token
      * @throws CompileError 如果类型不匹配
@@ -106,14 +112,15 @@ public final class Analyser {
         var token = peek();
         if (token.getTokenType() == tt) {
             return next();
-        } else {
+        }
+        else {
             throw new ExpectedTokenError(tt, token);
         }
     }
 
     /**
      * 获取下一个变量的栈偏移
-     * 
+     *
      * @return
      */
     private int getNextVariableOffset() {
@@ -122,7 +129,7 @@ public final class Analyser {
 
     /**
      * 添加一个符号
-     * 
+     *
      * @param name          名字
      * @param isInitialized 是否已赋值
      * @param isConstant    是否是常量
@@ -132,14 +139,15 @@ public final class Analyser {
     private void addSymbol(String name, boolean isInitialized, boolean isConstant, Pos curPos) throws AnalyzeError {
         if (this.symbolTable.get(name) != null) {
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, curPos);
-        } else {
+        }
+        else {
             this.symbolTable.put(name, new SymbolEntry(isConstant, isInitialized, getNextVariableOffset()));
         }
     }
 
     /**
      * 设置符号为已赋值
-     * 
+     *
      * @param name   符号名称
      * @param curPos 当前位置（报错用）
      * @throws AnalyzeError 如果未定义则抛异常
@@ -148,14 +156,15 @@ public final class Analyser {
         var entry = this.symbolTable.get(name);
         if (entry == null) {
             throw new AnalyzeError(ErrorCode.NotDeclared, curPos);
-        } else {
+        }
+        else {
             entry.setInitialized(true);
         }
     }
 
     /**
      * 获取变量在栈上的偏移
-     * 
+     *
      * @param name   符号名
      * @param curPos 当前位置（报错用）
      * @return 栈偏移
@@ -165,14 +174,15 @@ public final class Analyser {
         var entry = this.symbolTable.get(name);
         if (entry == null) {
             throw new AnalyzeError(ErrorCode.NotDeclared, curPos);
-        } else {
+        }
+        else {
             return entry.getStackOffset();
         }
     }
 
     /**
      * 获取变量是否是常量
-     * 
+     *
      * @param name   符号名
      * @param curPos 当前位置（报错用）
      * @return 是否为常量
@@ -182,7 +192,8 @@ public final class Analyser {
         var entry = this.symbolTable.get(name);
         if (entry == null) {
             throw new AnalyzeError(ErrorCode.NotDeclared, curPos);
-        } else {
+        }
+        else {
             return entry.isConstant();
         }
     }
@@ -301,7 +312,8 @@ public final class Analyser {
         boolean negative = false;
         if (nextIf(TokenType.Plus) != null) {
             negative = false;
-        } else if (nextIf(TokenType.Minus) != null) {
+        }
+        else if (nextIf(TokenType.Minus) != null) {
             negative = true;
         }
 
@@ -336,7 +348,8 @@ public final class Analyser {
             // 生成代码
             if (op.getTokenType() == TokenType.Plus) {
                 instructions.add(new Instruction(Operation.ADD));
-            } else if (op.getTokenType() == TokenType.Minus) {
+            }
+            else if (op.getTokenType() == TokenType.Minus) {
                 instructions.add(new Instruction(Operation.SUB));
             }
         }
@@ -357,7 +370,8 @@ public final class Analyser {
         if (symbol == null) {
             // 没有这个标识符
             throw new AnalyzeError(ErrorCode.NotDeclared, /* 当前位置 */ null);
-        } else if (symbol.isConstant) {
+        }
+        else if (symbol.isConstant) {
             // 标识符是常量
             throw new AnalyzeError(ErrorCode.AssignToConstant, /* 当前位置 */ null);
         }
@@ -405,7 +419,8 @@ public final class Analyser {
             // 生成代码
             if (op.getTokenType() == TokenType.Mult) {
                 instructions.add(new Instruction(Operation.MUL));
-            } else if (op.getTokenType() == TokenType.Div) {
+            }
+            else if (op.getTokenType() == TokenType.Div) {
                 instructions.add(new Instruction(Operation.DIV));
             }
         }
@@ -419,7 +434,8 @@ public final class Analyser {
             negate = true;
             // 计算结果需要被 0 减
             instructions.add(new Instruction(Operation.LIT, 0));
-        } else {
+        }
+        else {
             nextIf(TokenType.Plus);
             negate = false;
         }
@@ -434,22 +450,26 @@ public final class Analyser {
             if (symbol == null) {
                 // 没有这个标识符
                 throw new AnalyzeError(ErrorCode.NotDeclared, /* 当前位置 */ null);
-            } else if (!symbol.isInitialized) {
+            }
+            else if (!symbol.isInitialized) {
                 // 标识符没初始化
                 throw new AnalyzeError(ErrorCode.NotInitialized, /* 当前位置 */ null);
             }
             var offset = getOffset(name, null);
             instructions.add(new Instruction(Operation.LOD, offset));
-        } else if (check(TokenType.Uint)) {
+        }
+        else if (check(TokenType.Uint)) {
             // 是整数
             // 加载整数值
             int value = (int) next().getValue();
             instructions.add(new Instruction(Operation.LIT, value));
-        } else if (check(TokenType.LParen)) {
+        }
+        else if (check(TokenType.LParen)) {
             // 是表达式
             // 调用相应的处理函数
             analyseExpression();
-        } else {
+        }
+        else {
             // 都不是，摸了
             throw new ExpectedTokenError(List.of(TokenType.Ident, TokenType.Uint, TokenType.LParen), next());
         }
