@@ -265,6 +265,7 @@ public final class Analyser {
 
             // 下个 token 是等于号吗？如果是的话分析初始化
             if (nextIf(TokenType.Equal) != null) {
+                initializeSymbol(name, nameToken.getStartPos());
                 // 分析初始化的表达式
                 analyseExpression();
             }
@@ -376,10 +377,10 @@ public final class Analyser {
             throw new AnalyzeError(ErrorCode.AssignToConstant, identifier.getStartPos());
         }
         // 设置符号已初始化
-        initializeSymbol(name, null);
+        initializeSymbol(name, identifier.getStartPos());
 
         // 把结果保存
-        var offset = getOffset(name, null);
+        var offset = getOffset(name, identifier.getStartPos());
         instructions.add(new Instruction(Operation.STO, offset));
     }
 
@@ -406,7 +407,7 @@ public final class Analyser {
         while (true) {
             // 预读可能是运算符的 token
             var op = peek();
-            if (op.getTokenType() != TokenType.Plus && op.getTokenType() != TokenType.Minus) {
+            if (op.getTokenType() != TokenType.Mult && op.getTokenType() != TokenType.Div) {
                 break;
             }
 
@@ -455,7 +456,7 @@ public final class Analyser {
                 // 标识符没初始化
                 throw new AnalyzeError(ErrorCode.NotInitialized, identifier.getStartPos());
             }
-            var offset = getOffset(name, null);
+            var offset = getOffset(name, identifier.getStartPos());
             instructions.add(new Instruction(Operation.LOD, offset));
         }
         else if (check(TokenType.Uint)) {

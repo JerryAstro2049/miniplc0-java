@@ -52,13 +52,18 @@ public class Tokenizer {
         // -- 前进一个字符，并存储这个字符
         //
         char ch = it.nextChar();
+        stringBuffer.append(ch);
         // 解析存储的字符串为无符号整数
         // 解析成功则返回无符号整数类型的token，否则返回编译错误
         //
-        String word = stringBuffer.toString();
-        int value = Integer.parseUnsignedInt(word);
-        return new Token(TokenType.Uint, value, it.previousPos(), it.currentPos());
-        // Token 的 Value 应填写数字的值
+        try {
+            String word = stringBuffer.toString();
+            int value = Integer.parseUnsignedInt(word);
+            return new Token(TokenType.Uint, value, it.previousPos(), it.currentPos());
+            // Token 的 Value 应填写数字的值
+        } catch (Exception e) {
+            throw new TokenizeError(ErrorCode.IntegerOverflow, it.previousPos());
+        }
     }
 
     private Token lexIdentOrKeyword() throws TokenizeError {
@@ -72,6 +77,7 @@ public class Tokenizer {
         // -- 前进一个字符，并存储这个字符
         //
         char ch = it.nextChar();
+        stringBuffer.append(ch);
         // 尝试将存储的字符串解释为关键字
         // -- 如果是关键字，则返回关键字类型的 token
         // -- 否则，返回标识符
